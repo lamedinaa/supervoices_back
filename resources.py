@@ -183,6 +183,8 @@ class RecursoUnConcurso(Resource):
 
     def post(self,id_tblConcursos):
 
+        print("hola mundo")
+
         id_concurso = request.json["id_concurso"]
 
         concurso=Concursos.query.get_or_404(id_concurso)
