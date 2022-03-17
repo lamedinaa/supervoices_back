@@ -144,19 +144,8 @@ class RecursoListarConcursos(Resource):
         return jsonify({"concursos":message})
 
     def post(self):
-        print(request.json)
-        print("#############DEBUG VALORES: ")
-        print(request.json['nombreConcurso'])
-        print(request.json['url'])
-        print(request.json['urlBanner'])
-        print(request.json['precio'])
-        print(request.json['guion'])
-        print(request.json['recomendaciones'])
-        print(request.json['fechaInicio'])
-        print(request.json['fechaFinal'])
-        print(request.json['admin_id'])
-        print("###############fin valores")
 
+        print(request.json)
         administrador_id = request.json['admin_id']
 
         nuevo_concurso=Concursos(
@@ -192,9 +181,11 @@ class RecursoListarConcursos(Resource):
 
 class RecursoUnConcurso(Resource):
 
-    def get(self,id_tblConcursos):
+    def post(self):
 
-        concurso=Concursos.query.get_or_404(id_tblConcursos)
+        id_concurso = request.json["id_concurso"]
+
+        concurso=Concursos.query.get_or_404(id_concurso)
 
         locutores = [{
             "nombre": locutor.nombre,
