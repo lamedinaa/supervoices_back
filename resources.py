@@ -1,7 +1,9 @@
 from dbm import dumb
 from flask import jsonify,request,json,Response
 from flask_restful import Resource
+#from models import *
 from .models import *
+#from __init__ import db, bcrypt,mail
 from . import db, bcrypt,mail
 from flask_jwt_extended import create_access_token,jwt_required
 from flask_mail import Message
@@ -19,29 +21,29 @@ class RecursoAgregarAdmins(Resource):
             return admins_schema.dump(administradores)
 
     def post(self):
-            
-
+            print(request.json)
+            print("debug1")
             nombre=request.json['nombre']
             apellido=request.json['apellido']
             email=request.json['email']
-            clave=request.json['clave']   
-            
+            clave=request.json['clave']
+            print("debug 2")
             admin_exists = Administradores.query.filter_by(email=email).first()
             
             if admin_exists:
                 return jsonify({"error": "Usuario ya esta registrado"}, 409)
-            
-            hashed_clave=bcrypt.generate_password_hash(clave)
-            
+
+            hashed_clave=bcrypt.generate_password_hash(clave).decode('utf-8')
+
             #ENVIO DE CORREO
             # msg = Message("asunto", sender = 'lamedinaa@gmail.com', recipients = [f'{email}'])
             # msg.body = "body supervoices"
             # mail.send(msg)
-            
+
             #ADIRIENDO ADMINISTRADOR
             nuevo_admin=Administradores(nombre=nombre, apellido=apellido, email=email,clave=hashed_clave)
             db.session.add(nuevo_admin)
-            
+
             db.session.commit()
             message = json.dumps({"message": "usuario creado", "usuario": admin_schema.dump(nuevo_admin)})
 
@@ -54,30 +56,34 @@ class RecursoLogin(Resource):
 
         print(request.json)
         print("#################")
-        
+
         email=request.json['email']
         clave=request.json['clave']
         print("DEBUG 1")
-        
+
         if not email or not clave:
                 return jsonify({'message':'Email or password mismatch'})
         print("DEBUG 2")
         user = Administradores.query.filter_by(email=email).first()
         print("DEBUG 3")
         if user is None:
+            print("debug 3.1")
             message = json.dumps({"message": "No Autorizado, el email no está registrado o es incorrecto", 'auth':'False'})
             return Response(message, status=401, mimetype='application/json')
 
         elif not bcrypt.check_password_hash(user.clave, clave):
+            print("debug 3.2")
             message = json.dumps({"message": "No Autorizado, la contraseña es incorrecta", 'auth':'False'})
             return Response(message, status=401, mimetype='application/json')
         else:
             print("DEBUG 4 ")
             access_token=create_access_token(identity=email)
             print("DEBUG 5")
-            return jsonify({'message': 'Autenticado exitosamente', 'auth':'True', "access_token":access_token,"usuario_id":user.id})
+            return jsonify({'auth':'True', "access_token":access_token,"usuario_id":user.id})
+            #return jsonify({'message': 'Autenticado exitosamente', 'auth':'True', "access_token":access_token,"usuario_id":user.id})
 
-            
+
+
 class RecursoUnAdmin(Resource):
 
     # @jwt_required()
@@ -91,22 +97,22 @@ class RecursoUnAdmin(Resource):
              "id": concurso.id ,
              "nombre": concurso.nombre,
              "url": concurso.url,
-             "valor":concurso.valor,
+             "valor":concurso.precio,
              "guion":concurso.guion,
              "recomendaciones":concurso.recomendaciones,
              "fechainicio":concurso.fechainicio,
              "fechafin":concurso.fechafin
-             } 
-             for concurso in admin.concursos ]          
+             }
+             for concurso in admin.concursos ]
             admin = admin_schema.dump(admin)
             print("debug 4")
             message =  json.dumps({"administrador": admin,"concursos": concursos })
             print("debug 5")
             return Response(message, status=201, mimetype='application/json')
 
-        
+
     def put(self, id_Administradores):
-    
+
             admin=Administradores.query.get_or_404(id_Administradores)
             if 'nombre' in request.json:
                 admin.nombre=request.json['nombre']
@@ -128,38 +134,43 @@ class RecursoUnAdmin(Resource):
 
 class RecursoListarConcursos(Resource):
 
-    def get(self,admin_id):   #el request id hay que cambiarlo, se me viene a la cabeza una variable de sesión hay que investigar
-
-        concursos= Concursos.query.filter_by( administrador_id = int(admin_id)).first()
+    def get(self):
+        #servicio para todos los concursos
+        print("s debug 1")
+        concursos= Concursos.query.all()
+        print("debug 2")
         message = concs_schema.dump(concursos)
-
+        print("debug 3")
         return jsonify({"concursos":message})
 
     def post(self):
-    
+        print(request.json)
         print("#############DEBUG VALORES: ")
-        print(request.json['nombreconcurso'])
+        print(request.json['nombreConcurso'])
         print(request.json['url'])
-        print(request.json['valor'])
+        print(request.json['urlBanner'])
+        print(request.json['precio'])
         print(request.json['guion'])
         print(request.json['recomendaciones'])
-        print(request.json['fechainicio'])
-        print(request.json['fechafin'])
-        print(request.json['administrador_id'])
+        print(request.json['fechaInicio'])
+        print(request.json['fechaFinal'])
+        print(request.json['admin_id'])
         print("###############fin valores")
 
-        administrador_id = request.json['administrador_id']
-        
+        administrador_id = request.json['admin_id']
+
         nuevo_concurso=Concursos(
-            nombre=request.json['nombreconcurso'],
+            nombre=request.json['nombreConcurso'],
             administrador_id = int(administrador_id),
             url=request.json['url'],
-            valor=request.json['valor'],
+            urlbanner = request.json['urlBanner'],
+            precio=request.json['precio'],
             guion=request.json['guion'],
             recomendaciones=request.json['recomendaciones'],
-            fechainicio= datetime.strptime(request.json['fechainicio'],"%Y-%m-%dT%H:%M"),
-            fechafin= datetime.strptime(request.json['fechafin'],"%Y-%m-%dT%H:%M"),
-            #creadopor= datetime.strptime(request.json['creadopor'],"%Y-%m-%dT%H:%M"),
+            #fechainicio= datetime.strptime(request.json['fechaInicio'],"%Y-%m-%dT%H:%M:%S.%fZ"),
+            fechainicio= datetime.strptime(request.json['fechaInicio'],"%Y-%m-%dT%H:%M:%S"),
+            #fechafin= datetime.strptime(request.json['fechaFinal'],"%Y-%m-%dT%H:%M:%S.%fZ"),
+            fechafin= datetime.strptime(request.json['fechaFinal'],"%Y-%m-%dT%H:%M:%S"),
             fechacreacion=datetime.utcnow()
         )
         print("DEBUG 2")
@@ -168,13 +179,14 @@ class RecursoListarConcursos(Resource):
         administrador.concursos.append(nuevo_concurso)
         print("DEBUG 4")
         db.session.add(administrador)
+        db.session.add(administrador)
         print("DEBUG 5")
         db.session.add(nuevo_concurso)
         print("DEBUG 6")
         db.session.commit()
         print("DEBUG 7")
         message = json.dumps({"message": "concurso creado"})
-    
+
         return Response(message, status=201, mimetype='application/json')
 
 
@@ -183,7 +195,7 @@ class RecursoUnConcurso(Resource):
     def get(self,id_tblConcursos):
 
         concurso=Concursos.query.get_or_404(id_tblConcursos)
-        
+
         locutores = [{
             "nombre": locutor.nombre,
             "apellido": locutor.apellido,
@@ -194,21 +206,21 @@ class RecursoUnConcurso(Resource):
             "pathArchivo": locutor.pathArchivo,
             "tipoArchivo": locutor.tipoArchivo,
             "fechacreacion": locutor.fechacreacion
-        } 
+        }
         for locutor in concurso.locutores
         ]
 
         message = json.dumps({"concurso": conc_schema.dump(concurso) ,"locutores": locutores})
-        
+
         return Response(message,status=201,mimetype="application/json")
-        
+
     def put(self, id_tblConcursos):
         
         concurso=Concursos.query.get_or_404(id_tblConcursos)
-        
-        for _,key in request.json: 
+
+        for _,key in request.json:
             concurso[key] = request.json[key]
-        
+
         db.session.add(concurso)
         db.session.commit()
         message =  json.dumps({"message": "Concurso Actualizado Exitosamente"})
@@ -218,9 +230,9 @@ class RecursoUnConcurso(Resource):
 
 
 class RecursoListarLocutores(Resource):
-    
+
     def get(self):
-        
+
             locutores=Locutores.query.all()
             return locs_schema.dump(locutores)
 

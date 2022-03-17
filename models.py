@@ -1,4 +1,5 @@
 from linecache import lazycache
+#from __init__ import db , ma
 from . import db , ma
 from datetime import datetime
 from marshmallow import fields
@@ -8,7 +9,7 @@ class Administradores(db.Model):
     nombre=db.Column(db.String(50),nullable=False)
     apellido=db.Column(db.String(50),nullable=False)
     email=db.Column(db.String(50), nullable=False, unique=True)
-    clave=db.Column(db.String(50), nullable=False)
+    clave=db.Column(db.String(200), nullable=False)
     concursos = db.relationship('Concursos',backref='administradores', lazy='dynamic')
 
 
@@ -22,13 +23,14 @@ class Concursos(db.Model):
     nombre=db.Column(db.String(255))
     administrador_id = db.Column(db.Integer,db.ForeignKey('administradores.id'))
     locutores = db.relationship('Locutores',secondary=concursos_locutores)
-    url=db.Column(db.String(50), unique=True)
-    valor=db.Column(db.Numeric(10,2))
+    url=db.Column(db.String(200), unique=True)
+    urlbanner= db.Column(db.String(200))
+    precio=db.Column(db.Numeric(10,2))
     guion=db.Column(db.Text)
     recomendaciones=db.Column(db.Text)
     fechainicio=db.Column(db.DateTime)
     fechafin=db.Column(db.DateTime)
-    fechacreacion=db.Column(db.DateTime,default=datetime.now) 
+    fechacreacion=db.Column(db.DateTime,default=datetime.now)
 
 
 class Locutores(db.Model):
@@ -53,8 +55,8 @@ admins_schema=Administradores_Schema(many=True)
 
 class Concursos_Schema(ma.Schema):
     class Meta:
-        fields=('id','nombre','url','valor','guion','recomendaciones','fechainicio','fechafin','fechacreacion')
-        
+        fields=('id','nombre','url','urlbanner','precio','guion','recomendaciones','fechainicio','fechafin','fechacreacion')
+
 conc_schema=Concursos_Schema()
 concs_schema=Concursos_Schema(many=True)
 
