@@ -68,7 +68,7 @@ api.add_resource(RecursoLogin,'/api/login')
 api.add_resource(RecursoAgregarAdmins,'/api/registrarAdmin')
 api.add_resource(RecursoUnAdmin,'/api/admin')
 api.add_resource(RecursoListarConcursos,'/api/registrarConcursos')
-api.add_resource(RecursoUnConcurso,'/api/registrarConcursos/<int:id_tblConcursos>')
+api.add_resource(RecursoUnConcurso,'/api/registrarconcursos/<int:id_tblConcursos>')
 api.add_resource(RecursoListarLocutores,'/api/locutores')
 
 

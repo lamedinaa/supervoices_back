@@ -183,7 +183,7 @@ class RecursoUnConcurso(Resource):
 
     def post(self,id_tblConcursos):
 
-        print("hola mundo")
+        print("hola mundo#######################")
 
         id_concurso = request.json["id_concurso"]
 
