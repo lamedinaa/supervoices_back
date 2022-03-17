@@ -168,9 +168,9 @@ class RecursoListarConcursos(Resource):
             guion=request.json['guion'],
             recomendaciones=request.json['recomendaciones'],
             #fechainicio= datetime.strptime(request.json['fechaInicio'],"%Y-%m-%dT%H:%M:%S.%fZ"),
-            fechainicio= datetime.strptime(request.json['fechaInicio'],"%Y-%m-%dT%H:%M:%S"),
+            fechainicio= datetime.strptime(request.json['fechaInicio'],"%Y-%m-%dT%H:%M"),
             #fechafin= datetime.strptime(request.json['fechaFinal'],"%Y-%m-%dT%H:%M:%S.%fZ"),
-            fechafin= datetime.strptime(request.json['fechaFinal'],"%Y-%m-%dT%H:%M:%S"),
+            fechafin= datetime.strptime(request.json['fechaFinal'],"%Y-%m-%dT%H:%M"),
             fechacreacion=datetime.utcnow()
         )
         print("DEBUG 2")
