@@ -181,7 +181,7 @@ class RecursoListarConcursos(Resource):
 
 class RecursoUnConcurso(Resource):
 
-    def post(self):
+    def post(self,id_tblConcursos):
 
         id_concurso = request.json["id_concurso"]
 
