@@ -181,13 +181,9 @@ class RecursoListarConcursos(Resource):
 
 class RecursoUnConcurso(Resource):
 
-    def post(self,id_tblConcursos):
+    def get(self,id_tblConcurso):
 
-        print("hola mundo#######################")
-
-        id_concurso = request.json["id_concurso"]
-
-        concurso=Concursos.query.get_or_404(id_concurso)
+        concurso=Concursos.query.get_or_404(id_tblConcurso)
 
         locutores = [{
             "nombre": locutor.nombre,
@@ -206,6 +202,9 @@ class RecursoUnConcurso(Resource):
         message = json.dumps({"concurso": conc_schema.dump(concurso) ,"locutores": locutores})
 
         return Response(message,status=201,mimetype="application/json")
+
+    def post(self):
+        return "hola mundo"
 
     def put(self, id_tblConcursos):
         
