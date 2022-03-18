@@ -283,12 +283,17 @@ class RecursoListarLocutores(Resource):
 
                 print("id_locutor: {0} ".format(locutor.id))
                 filename = "{0}{1}_{2}".format(request.form['id_concurso'],locutor.id,filename)
+                print("filename: {0}".format(filename))
                 locutor.nombreArchivo = filename
 
                 db.session.commit()
                 
+                print("commit 1 ")
                 
-                file['file'].save(os.path.join(data["UPLOAD_FOLDER"], filename))
+                guardar_archivo = os.path.join(data["UPLOAD_FOLDER"], filename)
+                print("guardando archivo: {0}".format(guardar_archivo))
+                file['file'].save(guardar_archivo)
+                print("archivo guardado")
 
                 message =  json.dumps({"message": "Audio subido Exitosamente"})
                 return Response(message, status=201, mimetype='application/json')
