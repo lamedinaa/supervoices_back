@@ -7,8 +7,18 @@ from .models import *
 from . import db, bcrypt,mail
 from flask_jwt_extended import create_access_token,jwt_required
 from flask_mail import Message
-
 from datetime import datetime
+import os
+from pathlib import Path
+
+#directorio relativo
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+#código para determinar los settings
+path_settings = os.path.join(BASE_DIR,"settings/settings.json")
+with open(path_settings) as json_file:
+    data = json.load(json_file)
+
 
 #RegistrarAdmins
 class RecursoAgregarAdmins(Resource):
@@ -22,12 +32,12 @@ class RecursoAgregarAdmins(Resource):
 
     def post(self):
             print(request.json)
-            print("debug1")
+            
             nombre=request.json['nombre']
             apellido=request.json['apellido']
             email=request.json['email']
             clave=request.json['clave']
-            print("debug 2")
+            
             admin_exists = Administradores.query.filter_by(email=email).first()
             
             if admin_exists:
@@ -55,17 +65,15 @@ class RecursoLogin(Resource):
     def post(self):
 
         print(request.json)
-        print("#################")
-
+    
         email=request.json['email']
         clave=request.json['clave']
-        print("DEBUG 1")
-
+        
         if not email or not clave:
                 return jsonify({'message':'Email or password mismatch'})
-        print("DEBUG 2")
+        
         user = Administradores.query.filter_by(email=email).first()
-        print("DEBUG 3")
+        
         if user is None:
             print("debug 3.1")
             message = json.dumps({"message": "No Autorizado, el email no está registrado o es incorrecto", 'auth':'False'})
@@ -105,9 +113,9 @@ class RecursoUnAdmin(Resource):
              }
              for concurso in admin.concursos ]
             admin = admin_schema.dump(admin)
-            print("debug 4")
+            
             message =  json.dumps({"administrador": admin,"concursos": concursos })
-            print("debug 5")
+            
             return Response(message, status=201, mimetype='application/json')
 
 
@@ -136,11 +144,10 @@ class RecursoListarConcursos(Resource):
 
     def get(self):
         #servicio para todos los concursos
-        print("s debug 1")
+
         concursos= Concursos.query.all()
-        print("debug 2")
         message = concs_schema.dump(concursos)
-        print("debug 3")
+
         return jsonify({"concursos":message})
 
     def post(self):
@@ -162,28 +169,27 @@ class RecursoListarConcursos(Resource):
             fechafin= datetime.strptime(request.json['fechaFinal'],"%Y-%m-%dT%H:%M"),
             fechacreacion=datetime.utcnow()
         )
-        print("DEBUG 2")
+
         administrador = Administradores.query.filter_by( id= int(administrador_id) ).first()
-        print("DEBUG 3")
         administrador.concursos.append(nuevo_concurso)
-        print("DEBUG 4")
         db.session.add(administrador)
         db.session.add(administrador)
-        print("DEBUG 5")
         db.session.add(nuevo_concurso)
-        print("DEBUG 6")
         db.session.commit()
-        print("DEBUG 7")
+
         message = json.dumps({"message": "concurso creado"})
 
         return Response(message, status=201, mimetype='application/json')
 
 
+
+
+
 class RecursoUnConcurso(Resource):
 
-    def get(self,id_tblConcurso):
+    def get(self,id_tblConcursos):
 
-        concurso=Concursos.query.get_or_404(id_tblConcurso)
+        concurso=Concursos.query.get_or_404(id_tblConcursos)
 
         locutores = [{
             "nombre": locutor.nombre,
@@ -203,21 +209,29 @@ class RecursoUnConcurso(Resource):
 
         return Response(message,status=201,mimetype="application/json")
 
-    def post(self):
-        return "hola mundo"
 
     def put(self, id_tblConcursos):
         
         concurso=Concursos.query.get_or_404(id_tblConcursos)
+        print(request.json)
+        for key in request.json.keys():
+            concurso.key = request.json[key] if request.json[key] else ""
 
-        for _,key in request.json:
-            concurso[key] = request.json[key]
-
-        db.session.add(concurso)
+        concurso.nombre = request.json["nombre"] if request.json["nombre"] else ""
         db.session.commit()
+
         message =  json.dumps({"message": "Concurso Actualizado Exitosamente"})
+
         return Response(message, status=201, mimetype='application/json')
 
+
+    def delete(self,id_tblConcursos):
+
+        concurso=Concursos.query.get_or_404(id_tblConcursos)
+        message =  json.dumps({"message": "Concurso Actualizado Exitosamente"})
+
+
+        return Response(message, status=201, mimetype='application/json')
 
 
 
@@ -229,26 +243,66 @@ class RecursoListarLocutores(Resource):
             return locs_schema.dump(locutores)
 
     def post(self):
+            print(request.files)
+            print(request.form)
+            form = request.form
+            file = request.files
+            ALLOWED_EXTENSIONS = {'wav','mp3','mp4','ogg'}
+            if 'file' not in request.files:
+                return {"message":"no existe archivo"}
+            filename = file['file'].filename
 
-            concurso = Concursos.query.filter_by( id = int(request.json['id_concurso']) ).first()
-            print("debug 1")
-            locutor=Locutores(
-                nombre=request.json['nombre'],
-                apellido=request.json['apellido'],
-                email=request.json['email'],
-                observaciones=request.json['observaciones'],
-                nombreArchivo=request.json['nombreArchivo'],
-                extensionArchivo=request.json['extensionArchivo'],
-                pathArchivo=request.json['pathArchivo'],
-                tipoArchivo=request.json['tipoArchivo'],
-            )
-            print("debug 2")
-            locutor.concursos.append(concurso)
-            concurso.locutores.append(locutor)
-            print("debug 3")
-            db.session.add(locutor)
-            db.session.add(concurso)
-            db.session.commit()
-            print("debug 4")
+            if file['file'] and filename.rsplit('.',1)[1] in ALLOWED_EXTENSIONS:
 
-            return loc_schema.dump(locutor), 201
+                concurso = Concursos.query.filter_by( id = int(request.form['id_concurso']) ).first()
+
+                locutor=Locutores(
+                    nombre=request.form['nombre'],
+                    apellido=request.form['apellido'],
+                    email=request.form['email'],
+                    observaciones=request.form['observaciones']
+                )
+
+                locutor.concursos.append(concurso)
+                concurso.locutores.append(locutor)
+                db.session.commit()
+
+                print("id_locutor: {0} ".format(locutor.id))
+                filename = "{0}{1}_{2}".format(request.form['id_concurso'],locutor.id,filename)
+                locutor.nombreArchivo = filename
+
+                db.session.commit()
+                
+                
+                file['file'].save(os.path.join(data["UPLOAD_FOLDER"], filename))
+
+                message =  json.dumps({"message": "Audio subido Exitosamente"})
+                return Response(message, status=201, mimetype='application/json')
+
+            message =  json.dumps({"message": "Fallo al subir el archivo"})
+            return Response(message, status=500, mimetype='application/json')
+
+
+
+class RecursoConsultaConcurso(Resource):
+
+    def post(self):
+        
+        print(request.json)
+
+        concurso = Concursos.query.filter_by( id = int(request.json['id_concurso']) ).first()
+        print(concurso)
+        print("debug 1.0")
+        if concurso is None:
+            message =  json.dumps({"message": "No existe concurso","concurso":"false"})
+            return Response(message, status=201, mimetype='application/json')            
+
+        print("debug 1")
+        if request.json["nombre"] != concurso.nombre.replace(" ",""):
+            print("No existe concurso con es nombre")
+            message =  json.dumps({"message": "No existe el nombre concurso","concurso":"false"})
+            return Response(message, status=201, mimetype='application/json')
+
+
+        message =  json.dumps({"message": "Existe concurso","concurso":"true"})
+        return Response(message, status=201, mimetype='application/json')

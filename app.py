@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_restful import Api
 #from resources import RecursoAgregarAdmins,RecursoListarLocutores,RecursoLogin,RecursoListarConcursos,RecursoUnConcurso,RecursoUnAdmin
-from .resources import RecursoAgregarAdmins,RecursoListarLocutores,RecursoLogin,RecursoListarConcursos,RecursoUnConcurso,RecursoUnAdmin
+from .resources import RecursoAgregarAdmins,RecursoListarLocutores,RecursoLogin,RecursoListarConcursos,RecursoUnConcurso,RecursoUnAdmin,RecursoConsultaConcurso
 from . import  db,ma,bcrypt,mail
 from flask_mail import Message
 from pathlib import Path
@@ -70,6 +70,7 @@ api.add_resource(RecursoUnAdmin,'/api/admin')
 api.add_resource(RecursoListarConcursos,'/api/registrarConcursos')
 api.add_resource(RecursoUnConcurso,'/api/registrarconcursos/<int:id_tblConcursos>')
 api.add_resource(RecursoListarLocutores,'/api/locutores')
+api.add_resource(RecursoConsultaConcurso,'/api/consultaconcurso')
 
 
 
