@@ -1,4 +1,5 @@
 from dbm import dumb
+import numbers
 from flask import jsonify,request,json,Response
 from flask_restful import Resource
 #from models import *
@@ -158,7 +159,6 @@ class RecursoListarConcursos(Resource):
         nuevo_concurso=Concursos(
             nombre=request.json['nombreConcurso'],
             administrador_id = int(administrador_id),
-            url=request.json['url'],
             urlbanner = request.json['urlBanner'],
             precio=request.json['precio'],
             guion=request.json['guion'],
@@ -169,6 +169,9 @@ class RecursoListarConcursos(Resource):
             fechafin= datetime.strptime(request.json['fechaFinal'],"%Y-%m-%dT%H:%M"),
             fechacreacion=datetime.utcnow()
         )
+        
+        print("debug 1 ")
+
 
         administrador = Administradores.query.filter_by( id= int(administrador_id) ).first()
         administrador.concursos.append(nuevo_concurso)
@@ -176,6 +179,14 @@ class RecursoListarConcursos(Resource):
         db.session.add(administrador)
         db.session.add(nuevo_concurso)
         db.session.commit()
+        print("debug 1.2 ")
+
+        url_concurso = data["URL_SUPERVOICES"] + request.json['nombreConcurso'].replace(" ","") + "/" + str(nuevo_concurso.id)
+        print("url_concurso: {0}" + url_concurso)
+
+        nuevo_concurso.url = url_concurso
+        db.session.commit()
+        print("debug 1.3 ")
 
         message = json.dumps({"message": "concurso creado"})
 

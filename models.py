@@ -23,7 +23,7 @@ class Concursos(db.Model):
     nombre=db.Column(db.String(255))
     administrador_id = db.Column(db.Integer,db.ForeignKey('administradores.id'))
     locutores = db.relationship('Locutores',secondary=concursos_locutores)
-    url=db.Column(db.String(200), unique=True)
+    url=db.Column(db.String(200))
     urlbanner= db.Column(db.String(200))
     precio=db.Column(db.Numeric(10,2))
     guion=db.Column(db.Text)
