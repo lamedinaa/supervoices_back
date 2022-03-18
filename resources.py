@@ -110,7 +110,8 @@ class RecursoUnAdmin(Resource):
              "guion":concurso.guion,
              "recomendaciones":concurso.recomendaciones,
              "fechainicio":concurso.fechainicio,
-             "fechafin":concurso.fechafin
+             "fechafin":concurso.fechafin,
+             "urlbanner": concurso.urlbanner
              }
              for concurso in admin.concursos ]
             admin = admin_schema.dump(admin)
@@ -182,9 +183,11 @@ class RecursoListarConcursos(Resource):
         print("debug 1.2 ")
 
         url_concurso = data["URL_SUPERVOICES"] + request.json['nombreConcurso'].replace(" ","") + "/" + str(nuevo_concurso.id)
+        url_concursobanner = request.json['nombreConcurso'].replace(" ","") + "/" + str(nuevo_concurso.id)
         print("url_concurso: {0}" + url_concurso)
-
+        print("url_banner: {0}".format(url_concursobanner))
         nuevo_concurso.url = url_concurso
+        nuevo_concurso.urlbanner = url_concursobanner 
         db.session.commit()
         print("debug 1.3 ")
 
