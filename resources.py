@@ -214,7 +214,8 @@ class RecursoUnConcurso(Resource):
             "extensionArchivo": locutor.extensionArchivo,
             "pathArchivo": locutor.pathArchivo,
             "tipoArchivo": locutor.tipoArchivo,
-            "fechacreacion": locutor.fechacreacion
+            "fechacreacion": locutor.fechacreacion,
+            "convertido": locutor.convertido
         }
         for locutor in concurso.locutores
         ]

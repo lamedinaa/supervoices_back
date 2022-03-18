@@ -44,6 +44,7 @@ class Locutores(db.Model):
     pathArchivo=db.Column(db.String(50))
     tipoArchivo=db.Column(db.String(50))
     fechacreacion=db.Column(db.DateTime,default=datetime.now)
+    convertido = db.Column(db.Integer)
     concursos = db.relationship('Concursos',secondary=concursos_locutores)
 
 
@@ -62,6 +63,6 @@ concs_schema=Concursos_Schema(many=True)
 
 class Locutores_Schema(ma.Schema):
     class Meta:
-        fields=('id', 'id_concurso','nombre','apellido','email','observaciones','nombreArchivo','extensionArchivo','pathArchivo','tipoArchivo','fechacreacion')
+        fields=('id', 'id_concurso','nombre','apellido','email','observaciones','nombreArchivo','extensionArchivo','pathArchivo','tipoArchivo','fechacreacion',"convertido")
 loc_schema=Locutores_Schema()
 locs_schema=Locutores_Schema(many=True)
