@@ -275,9 +275,10 @@ class RecursoListarLocutores(Resource):
                     nombre=request.form['nombre'],
                     apellido=request.form['apellido'],
                     email=request.form['email'],
-                    observaciones=request.form['observaciones']
+                    observaciones=request.form['observaciones'],
+                    convertido=0
                 )
-
+                print("debug instancia de locutor")
                 locutor.concursos.append(concurso)
                 concurso.locutores.append(locutor)
                 db.session.commit()
