@@ -11,6 +11,8 @@ from flask_mail import Message
 from datetime import datetime
 import os
 from pathlib import Path
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
 
 #directorio relativo
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -50,6 +52,21 @@ class RecursoAgregarAdmins(Resource):
             # msg = Message("asunto", sender = 'lamedinaa@gmail.com', recipients = [f'{email}'])
             # msg.body = "body supervoices"
             # mail.send(msg)
+            print("enviando correo: {0}".format(email))
+            message = Mail(from_email='daveyouup@gmail.com',
+            to_emails=email,
+            subject="Bienvenido supervoices",
+            plain_text_content="Hola bienvendio a supervoices"
+            )
+            try:
+                sg = SendGridAPIClient(api_key="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")
+                response = sg.send(message)
+                print(response.status_code)
+                print(response.body)
+
+            except Exception as e:
+                print("error al enviar correo")
+                print(e)
 
             #ADIRIENDO ADMINISTRADOR
             nuevo_admin=Administradores(nombre=nombre, apellido=apellido, email=email,clave=hashed_clave)
@@ -297,6 +314,26 @@ class RecursoListarLocutores(Resource):
                 file['file'].save(guardar_archivo)
                 print("archivo guardado")
 
+
+
+                try:
+                    ###ENVIO DE CORREO SENDGRID PARA SUBIR AUDIO
+                    print("enviando email a: {0}".format(request.form['email']))
+                    message = Mail(from_email='daveyouup@gmail.com',
+                    to_emails=request.form['email'],
+                    subject="supervoices su audioo fue recibido",
+                    plain_text_content="Hola bienvendio a supervoices"
+                    )
+                    sg = SendGridAPIClient(api_key="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")
+                    response = sg.send(message)
+                    print(response.status_code)
+                    print(response.body)
+
+                except Exception as e:
+                    print("error al enviar correo")
+                    print(e)
+
+                ###END SENDGRID
                 message =  json.dumps({"message": "Audio subido Exitosamente"})
                 return Response(message, status=201, mimetype='application/json')
 
