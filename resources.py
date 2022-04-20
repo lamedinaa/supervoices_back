@@ -29,6 +29,11 @@ clientS3 = boto3.client('s3',
     aws_secret_access_key = data["aws_secret_access_key_S3"]
 )
 
+clientSQS = boto3.resource('sqs',
+    aws_access_key_id = data["aws_access_key_id_SQS"],
+    aws_secret_access_key = data["aws_secret_access_key_SQS"],
+    region_name='us-west-2'
+)
 
 #RegistrarAdmins
 class RecursoAgregarAdmins(Resource):
@@ -325,7 +330,11 @@ class RecursoListarLocutores(Resource):
                 clientS3.upload_fileobj(request.files['file'],upload_file_bucket,upload_file_key)
 
                 ##CODIGO PARA ALIMENTAR SQS
+                queue = clientSQS.get_queue_by_name(QueueName="supervoices")
+                sendmessage = {"filename":filename}
+                response = queue.send_message(MessageBody= json.dumps(sendmessage))
 
+                
                 #CODIGO PARA ENVIAR CORREO DE CONFIRMACIÓN CON SENDGRID
                 # try:
                 #     ###ENVIO DE CORREO SENDGRID PARA SUBIR AUDIO
