@@ -1,5 +1,5 @@
-from dbm import dumb
-import numbers
+#  from dbm import dumb
+# import numbers
 from flask import jsonify,request,json,Response
 from flask_restful import Resource
 #from models import *
@@ -13,14 +13,21 @@ import os
 from pathlib import Path
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
+import boto3
 
-#directorio relativo
+#DIRECTORIO RELATIVO
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-#código para determinar los settings
+#CODIGO PARA DETERMINAR LOS SETTINGS
 path_settings = os.path.join(BASE_DIR,"settings/settings.json")
 with open(path_settings) as json_file:
     data = json.load(json_file)
+
+#CODIGO PARA CONECTAR A S3
+clientS3 = boto3.client('s3',
+    aws_access_key_id = data["aws_access_key_id_S3"],
+    aws_secret_access_key = data["aws_secret_access_key_S3"]
+)
 
 
 #RegistrarAdmins
@@ -153,10 +160,6 @@ class RecursoUnAdmin(Resource):
             db.session.commit()
             message =  json.dumps({"message": "Administrador Actualizado Exitosamente"})
             return Response(message, status=201, mimetype='application/json')
-
-
-
-
 
 
 class RecursoListarConcursos(Resource):
@@ -308,30 +311,38 @@ class RecursoListarLocutores(Resource):
                 db.session.commit()
                 
                 print("commit 1 ")
-                
-                guardar_archivo = os.path.join(data["UPLOAD_FOLDER"], filename)
-                print("guardando archivo: {0}".format(guardar_archivo))
-                file['file'].save(guardar_archivo)
-                print("archivo guardado")
 
 
+                ##CODIGO PARA GUARDAR EN LOCAL
+                # guardar_archivo = os.path.join(data["UPLOAD_FOLDER"], filename)
+                # print("guardando archivo: {0}".format(guardar_archivo))
+                # file['file'].save(guardar_archivo)
+                # print("archivo guardado")
 
-                try:
-                    ###ENVIO DE CORREO SENDGRID PARA SUBIR AUDIO
-                    print("enviando email a: {0}".format(request.form['email']))
-                    message = Mail(from_email='daveyouup@gmail.com',
-                    to_emails=request.form['email'],
-                    subject="supervoices su audioo fue recibido",
-                    plain_text_content="Hola bienvendio a supervoices"
-                    )
-                    sg = SendGridAPIClient(api_key="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")
-                    response = sg.send(message)
-                    print(response.status_code)
-                    print(response.body)
+                ##CODIGO PARA ENVIAR GUARDAR EN S3
+                upload_file_bucket = 'supervoices'
+                upload_file_key = 'temp/' + filename
+                clientS3.upload_fileobj(request.files['file'],upload_file_bucket,upload_file_key)
 
-                except Exception as e:
-                    print("error al enviar correo")
-                    print(e)
+                ##CODIGO PARA ALIMENTAR SQS
+
+                #CODIGO PARA ENVIAR CORREO DE CONFIRMACIÓN CON SENDGRID
+                # try:
+                #     ###ENVIO DE CORREO SENDGRID PARA SUBIR AUDIO
+                #     print("enviando email a: {0}".format(request.form['email']))
+                #     message = Mail(from_email='daveyouup@gmail.com',
+                #     to_emails=request.form['email'],
+                #     subject="supervoices su audioo fue recibido",
+                #     plain_text_content="Hola bienvendio a supervoices"
+                #     )
+                #     sg = SendGridAPIClient(api_key="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")
+                #     response = sg.send(message)
+                #     print(response.status_code)
+                #     print(response.body)
+
+                # except Exception as e:
+                #     print("error al enviar correo")
+                #     print(e)
 
                 ###END SENDGRID
                 message =  json.dumps({"message": "Audio subido Exitosamente"})
