@@ -328,12 +328,12 @@ class RecursoListarLocutores(Resource):
                 upload_file_bucket = 'supervoices'
                 upload_file_key = 'temp/' + filename
                 clientS3.upload_fileobj(request.files['file'],upload_file_bucket,upload_file_key)
-
+                print("S3 DOCUMENTO CARGADO")
                 ##CODIGO PARA ALIMENTAR SQS
                 queue = clientSQS.get_queue_by_name(QueueName="supervoices")
                 sendmessage = {"filename":filename}
                 response = queue.send_message(MessageBody= json.dumps(sendmessage))
-
+                print("SQS ENVIADO.")
                 
                 #CODIGO PARA ENVIAR CORREO DE CONFIRMACIÓN CON SENDGRID
                 # try:
