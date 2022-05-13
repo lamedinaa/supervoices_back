@@ -71,7 +71,7 @@ class RecursoAgregarAdmins(Resource):
             plain_text_content="Hola bienvendio a supervoices"
             )
             try:
-                sg = SendGridAPIClient(api_key="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")
+                sg = SendGridAPIClient(api_key="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")
                 response = sg.send(message)
                 print(response.status_code)
                 print(response.body)
@@ -344,7 +344,7 @@ class RecursoListarLocutores(Resource):
                 #     subject="supervoices su audioo fue recibido",
                 #     plain_text_content="Hola bienvendio a supervoices"
                 #     )
-                #     sg = SendGridAPIClient(api_key="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")
+                #     sg = SendGridAPIClient(api_key="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")
                 #     response = sg.send(message)
                 #     print(response.status_code)
                 #     print(response.body)
